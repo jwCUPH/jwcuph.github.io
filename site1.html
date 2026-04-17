@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Fakebook</title>
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f0f2f5;
+}
+
+/* HEADER */
+.header {
+    background: #1877f2;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.post-btn {
+    background: white;
+    color: #1877f2;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.post-btn:hover {
+    background: #e4e6eb;
+}
+
+/* FEED */
+.feed {
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+/* POST */
+.post {
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.user {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.user img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.post img.content-img {
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 10px;
+    object-fit: cover;
+}
+
+/* COMMENT */
+.comment-box {
+    margin-top: 10px;
+}
+
+.comment {
+    display: flex;
+    margin-top: 8px;
+}
+
+.comment img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.comment-content {
+    background: #f0f2f5;
+    padding: 6px 10px;
+    border-radius: 12px;
+}
+
+.add-comment {
+    display: flex;
+    margin-top: 10px;
+}
+
+.add-comment input {
+    flex: 1;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.add-comment button {
+    margin-left: 6px;
+    background: #1877f2;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* MODAL */
+.modal {
+    display: none;
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+}
+
+.modal-content input, .modal-content textarea {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 6px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Fakebook</h1>
+    <button class="post-btn" onclick="openModal()">게시물 등록</button>
+</div>
+
+<div class="feed" id="feed"></div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <h3>게시물 작성</h3>
+        <input type="text" id="userId" placeholder="아이디">
+        <textarea id="content" placeholder="내용"></textarea>
+        <input type="text" id="imageUrl" placeholder="이미지 URL">
+        <input type="file" id="imageFile">
+        <button onclick="addPost()">등록</button>
+        <button onclick="closeModal()">닫기</button>
+    </div>
+</div>
+
+<script>
+const defaultProfile = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+/* SAMPLE USERS */
+const users = [
+    {name:"민수", img:"https://randomuser.me/api/portraits/men/32.jpg"},
+    {name:"지연", img:"https://randomuser.me/api/portraits/women/44.jpg"},
+    {name:"현우", img:"https://randomuser.me/api/portraits/men/55.jpg"}
+];
+
+/* SAMPLE POSTS */
+const posts = [
+{
+    user: users[0],
+    text: "오늘 날씨 진짜 좋다!",
+    img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+    comments:[
+        {user: users[1], text:"맞아 완전 좋음!"},
+        {user: users[2], text:"산책 가야겠다"}
+    ]
+},
+{
+    user: users[1],
+    text: "카페에서 여유 ☕",
+    img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93",
+    comments:[
+        {user: users[0], text:"분위기 좋다"},
+        {user: users[2], text:"어디야 여기?"}
+    ]
+}
+];
+
+function render() {
+    const feed = document.getElementById("feed");
+    feed.innerHTML = "";
+
+    posts.forEach((post, index)=>{
+        const div = document.createElement("div");
+        div.className="post";
+
+        div.innerHTML = `
+            <div class="user">
+                <img src="${post.user.img}">
+                <strong>${post.user.name}</strong>
+            </div>
+            <div>${post.text}</div>
+            ${post.img ? `<img class="content-img" src="${post.img}">` : ""}
+            <div class="comment-box">
+                ${post.comments.map(c=>`
+                    <div class="comment">
+                        <img src="${c.user.img}">
+                        <div class="comment-content">
+                            <strong>${c.user.name}</strong><br>${c.text}
+                        </div>
+                    </div>
+                `).join("")}
+                <div class="add-comment">
+                    <input placeholder="댓글" id="cmt-${index}">
+                    <button onclick="addComment(${index})">등록</button>
+                </div>
+            </div>
+        `;
+
+        feed.appendChild(div);
+    });
+}
+
+function addComment(i){
+    const input = document.getElementById(`cmt-${i}`);
+    if(!input.value) return;
+
+    posts[i].comments.push({
+        user:{name:"사용자", img:defaultProfile},
+        text: input.value
+    });
+
+    render();
+}
+
+function openModal(){
+    document.getElementById("modal").style.display="flex";
+}
+function closeModal(){
+    document.getElementById("modal").style.display="none";
+}
+
+function addPost(){
+    const id = document.getElementById("userId").value || "사용자";
+    const text = document.getElementById("content").value;
+    const url = document.getElementById("imageUrl").value;
+    const file = document.getElementById("imageFile").files[0];
+
+    if(!text) return;
+
+    if(file){
+        const reader = new FileReader();
+        reader.onload = function(e){
+            createPost(id, text, e.target.result);
+        };
+        reader.readAsDataURL(file);
+    } else {
+        createPost(id, text, url);
+    }
+
+    closeModal();
+}
+
+function createPost(id, text, img){
+    posts.unshift({
+        user:{name:id, img:defaultProfile},
+        text:text,
+        img:img,
+        comments:[]
+    });
+
+    render();
+}
+
+render();
+</script>
+
+</body>
+</html>
