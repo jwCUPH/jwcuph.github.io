@@ -1,678 +1,101 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FaceBook</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --fb-blue: #1877f2;
-    --fb-blue-dark: #166fe5;
-    --fb-blue-light: #e7f3ff;
-    --fb-green: #42b72a;
-    --fb-bg: #f0f2f5;
-    --fb-white: #ffffff;
-    --fb-text: #050505;
-    --fb-text-secondary: #65676b;
-    --fb-border: #ced0d4;
-    --fb-hover: #f2f2f2;
-    --fb-nav-height: 56px;
-    --fb-sidebar: 280px;
-    --fb-feed-max: 590px;
-  }
-  body { font-family: 'Noto Sans KR', sans-serif; background: var(--fb-bg); color: var(--fb-text); min-height: 100vh; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합 웹사이트 관리</title>
+    <style>
+        /* 전체 페이지 레이아웃 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            overflow: hidden; /* 스크롤 중복 방지 */
+        }
 
-  /* NAV */
-  .nav {
-    position: fixed; top: 0; left: 0; right: 0; height: var(--fb-nav-height);
-    background: var(--fb-white); box-shadow: 0 2px 4px rgba(0,0,0,.1); z-index: 1000;
-    display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
-  }
-  .nav-left { display: flex; align-items: center; gap: 8px; }
-  .nav-logo { color: var(--fb-blue); font-size: 32px; font-weight: 700; cursor: pointer; text-decoration: none; line-height: 1; }
-  .nav-search {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--fb-bg); border-radius: 50px; padding: 8px 16px; cursor: pointer;
-  }
-  .nav-search svg { color: var(--fb-text-secondary); }
-  .nav-search span { font-size: 15px; color: var(--fb-text-secondary); }
-  .nav-right { display: flex; align-items: center; gap: 8px; }
-  .nav-btn {
-    background: var(--fb-blue); color: #fff; border: none; border-radius: 6px;
-    padding: 8px 16px; font-size: 15px; font-weight: 600; cursor: pointer;
-    font-family: inherit; transition: background 0.15s;
-    white-space: nowrap;
-  }
-  .nav-btn:hover { background: var(--fb-blue-dark); }
-  .nav-profile-circle {
-    width: 40px; height: 40px; border-radius: 50%; overflow: hidden; cursor: pointer;
-    border: 2px solid var(--fb-border);
-  }
-  .nav-profile-circle img { width: 100%; height: 100%; object-fit: cover; }
+        /* 탭 버튼이 들어가는 상단 바 */
+        .tab-bar {
+            display: flex;
+            background-color: #333;
+            padding: 10px 10px 0 10px;
+        }
 
-  /* LAYOUT */
-  .layout { display: flex; max-width: 1200px; margin: 0 auto; padding-top: calc(var(--fb-nav-height) + 16px); gap: 16px; padding-left: 16px; padding-right: 16px; }
-  .sidebar-left { width: var(--fb-sidebar); flex-shrink: 0; }
-  .feed { flex: 1; max-width: var(--fb-feed-max); margin: 0 auto; }
-  .sidebar-right { width: var(--fb-sidebar); flex-shrink: 0; }
+        .tab-button {
+            padding: 10px 25px;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            background-color: #555;
+            color: white;
+            border-radius: 8px 8px 0 0;
+            margin-right: 5px;
+            transition: 0.3s;
+        }
 
-  /* SIDEBAR */
-  .sidebar-profile { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
-  .sidebar-profile:hover { background: var(--fb-hover); }
-  .sidebar-profile-img { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 1px solid var(--fb-border); }
-  .sidebar-profile-img img { width: 100%; height: 100%; object-fit: cover; }
-  .sidebar-profile-name { font-size: 15px; font-weight: 600; }
-  .sidebar-menu { margin-top: 8px; }
-  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 8px; cursor: pointer; transition: background 0.15s; font-size: 15px; font-weight: 500; }
-  .sidebar-item:hover { background: var(--fb-hover); }
-  .sidebar-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-  .sidebar-divider { border: none; border-top: 1px solid var(--fb-border); margin: 8px 0; }
+        .tab-button:hover {
+            background-color: #777;
+        }
 
-  /* STORY / CREATE POST */
-  .create-post-card {
-    background: var(--fb-white); border-radius: 10px; padding: 12px 16px;
-    box-shadow: 0 1px 2px rgba(0,0,0,.1); margin-bottom: 16px;
-  }
-  .create-post-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .create-post-input {
-    flex: 1; background: var(--fb-bg); border: 1px solid var(--fb-border);
-    border-radius: 50px; padding: 10px 16px; font-size: 16px; color: var(--fb-text-secondary);
-    cursor: pointer; transition: background 0.15s;
-  }
-  .create-post-input:hover { background: #e4e6e9; }
-  .create-post-bottom { display: flex; justify-content: space-around; border-top: 1px solid var(--fb-border); padding-top: 8px; }
-  .create-post-action { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: background 0.15s; font-size: 14px; font-weight: 600; color: var(--fb-text-secondary); }
-  .create-post-action:hover { background: var(--fb-hover); }
+        .tab-button.active {
+            background-color: #fff;
+            color: #000;
+            font-weight: bold;
+        }
 
-  /* POST CARD */
-  .post-card {
-    background: var(--fb-white); border-radius: 10px;
-    box-shadow: 0 1px 2px rgba(0,0,0,.1); margin-bottom: 16px; overflow: hidden;
-  }
-  .post-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px; }
-  .post-author { display: flex; align-items: center; gap: 10px; }
-  .post-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 1px solid var(--fb-border); }
-  .post-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .post-author-info { display: flex; flex-direction: column; }
-  .post-author-name { font-size: 15px; font-weight: 600; color: var(--fb-text); cursor: pointer; }
-  .post-author-name:hover { text-decoration: underline; }
-  .post-time { font-size: 12px; color: var(--fb-text-secondary); display: flex; align-items: center; gap: 4px; }
-  .post-more-btn { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--fb-text-secondary); font-size: 18px; transition: background 0.15s; }
-  .post-more-btn:hover { background: var(--fb-hover); }
-  .post-text { padding: 0 16px 12px; font-size: 15px; line-height: 1.5; }
-  .post-image { width: 100%; background: #000; max-height: 500px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  .post-image img { width: 100%; height: 100%; object-fit: cover; max-height: 500px; display: block; }
-  .post-stats { display: flex; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--fb-border); }
-  .post-stats-likes { display: flex; align-items: center; gap: 4px; font-size: 15px; color: var(--fb-text-secondary); }
-  .like-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--fb-blue); font-size: 12px; }
-  .heart-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #f33e58; font-size: 12px; }
-  .post-stats-right { font-size: 15px; color: var(--fb-text-secondary); cursor: pointer; }
-  .post-stats-right:hover { text-decoration: underline; }
-  .post-actions { display: flex; justify-content: space-around; padding: 4px 8px; border-bottom: 1px solid var(--fb-border); }
-  .post-action-btn {
-    flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 8px; border-radius: 8px; cursor: pointer; transition: background 0.15s;
-    font-size: 15px; font-weight: 600; color: var(--fb-text-secondary);
-  }
-  .post-action-btn:hover { background: var(--fb-hover); }
-  .post-action-btn.liked { color: var(--fb-blue); }
+        /* iframe이 들어가는 컨텐츠 영역 */
+        .tab-content {
+            display: none;
+            width: 100%;
+            height: calc(100vh - 50px); /* 상단 바 높이 제외 */
+            border: none;
+        }
 
-  /* COMMENTS */
-  .post-comments { padding: 8px 16px 4px; }
-  .comment-input-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
-  .comment-avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 1px solid var(--fb-border); }
-  .comment-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .comment-input-wrap { flex: 1; position: relative; }
-  .comment-input {
-    width: 100%; background: var(--fb-bg); border: none; border-radius: 20px;
-    padding: 8px 40px 8px 14px; font-size: 14px; font-family: inherit; outline: none;
-    color: var(--fb-text); resize: none; line-height: 1.4;
-  }
-  .comment-submit-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--fb-blue); font-size: 18px; }
-  .comment-item { display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-start; }
-  .comment-bubble { background: var(--fb-bg); border-radius: 18px; padding: 8px 12px; flex: 1; }
-  .comment-author { font-size: 13px; font-weight: 700; margin-bottom: 2px; cursor: pointer; }
-  .comment-author:hover { text-decoration: underline; }
-  .comment-text { font-size: 14px; line-height: 1.4; }
-  .comment-meta { display: flex; gap: 12px; padding-left: 12px; margin-top: 4px; }
-  .comment-meta span { font-size: 12px; color: var(--fb-text-secondary); cursor: pointer; font-weight: 600; }
-  .comment-meta span:hover { text-decoration: underline; }
+        .tab-content.active {
+            display: block;
+        }
 
-  /* MODAL */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65);
-    z-index: 2000; align-items: center; justify-content: center;
-  }
-  .modal-overlay.active { display: flex; }
-  .modal {
-    background: var(--fb-white); border-radius: 12px; width: 100%; max-width: 520px;
-    box-shadow: 0 4px 16px rgba(0,0,0,.3); overflow: hidden; max-height: 90vh; overflow-y: auto;
-  }
-  .modal-header {
-    display: flex; align-items: center; justify-content: center;
-    padding: 16px; border-bottom: 1px solid var(--fb-border); position: relative;
-  }
-  .modal-title { font-size: 20px; font-weight: 700; }
-  .modal-close {
-    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-    width: 36px; height: 36px; border-radius: 50%; background: var(--fb-bg);
-    border: none; cursor: pointer; font-size: 20px; color: var(--fb-text);
-    display: flex; align-items: center; justify-content: center; transition: background 0.15s;
-  }
-  .modal-close:hover { background: var(--fb-border); }
-  .modal-body { padding: 16px; }
-  .modal-author { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-  .modal-author-name { font-size: 15px; font-weight: 600; }
-  .modal-author-privacy { font-size: 12px; color: var(--fb-text-secondary); display: flex; align-items: center; gap: 4px; background: var(--fb-bg); padding: 2px 8px; border-radius: 4px; cursor: pointer; margin-top: 2px; }
-  .modal-textarea {
-    width: 100%; border: none; outline: none; resize: none; font-family: inherit;
-    font-size: 20px; color: var(--fb-text); min-height: 120px; line-height: 1.4;
-    placeholder-color: #bcc0c4;
-  }
-  .modal-name-input {
-    width: 100%; border: 1px solid var(--fb-border); border-radius: 8px; outline: none;
-    padding: 10px 14px; font-family: inherit; font-size: 15px; color: var(--fb-text);
-    margin-bottom: 12px; transition: border 0.15s;
-  }
-  .modal-name-input:focus { border-color: var(--fb-blue); }
-  .modal-image-section { border: 2px dashed var(--fb-border); border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: background 0.15s; margin-bottom: 12px; }
-  .modal-image-section:hover { background: var(--fb-bg); }
-  .modal-image-section p { color: var(--fb-text-secondary); font-size: 15px; margin-top: 8px; }
-  .modal-image-section small { color: var(--fb-text-secondary); font-size: 13px; }
-  .modal-url-input {
-    width: 100%; border: 1px solid var(--fb-border); border-radius: 8px; outline: none;
-    padding: 10px 14px; font-family: inherit; font-size: 14px; color: var(--fb-text);
-    margin-top: 10px; transition: border 0.15s;
-  }
-  .modal-url-input:focus { border-color: var(--fb-blue); }
-  .modal-preview-img { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 240px; object-fit: cover; display: none; }
-  .modal-add-options { border: 1px solid var(--fb-border); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .modal-add-options span { font-size: 15px; font-weight: 600; }
-  .modal-add-icons { display: flex; gap: 6px; }
-  .modal-icon-btn { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: background 0.15s; }
-  .modal-icon-btn:hover { background: var(--fb-hover); }
-  .modal-submit-btn {
-    width: 100%; background: var(--fb-blue); color: #fff; border: none; border-radius: 8px;
-    padding: 10px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit;
-    transition: background 0.15s;
-  }
-  .modal-submit-btn:hover { background: var(--fb-blue-dark); }
-  .modal-submit-btn:disabled { background: var(--fb-bg); color: var(--fb-text-secondary); cursor: not-allowed; }
-
-  /* AVATAR SVG default */
-  .default-avatar svg { width: 100%; height: 100%; }
-
-  /* RIGHT SIDEBAR */
-  .contacts-title { font-size: 17px; font-weight: 600; color: var(--fb-text-secondary); margin-bottom: 8px; }
-  .contact-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
-  .contact-item:hover { background: var(--fb-hover); }
-  .contact-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; position: relative; border: 1px solid var(--fb-border); }
-  .contact-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .online-dot { position: absolute; bottom: 1px; right: 1px; width: 10px; height: 10px; border-radius: 50%; background: #44b700; border: 2px solid #fff; }
-  .contact-name { font-size: 15px; font-weight: 500; }
-
-  /* File input hidden */
-  #fileInput { display: none; }
-
-  @media (max-width: 900px) {
-    .sidebar-left, .sidebar-right { display: none; }
-    .feed { max-width: 100%; }
-  }
-</style>
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav class="nav">
-  <div class="nav-left">
-    <a class="nav-logo" href="#">f</a>
-    <div class="nav-search">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <span>Facebook 검색</span>
-    </div>
-  </div>
-  <div class="nav-right">
-    <button class="nav-btn" id="openPostModal">＋ 게시물 등록</button>
-    <div class="nav-profile-circle">
-      <div class="default-avatar" style="width:40px;height:40px;">
-        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-          <rect width="40" height="40" fill="#e4e6e9"/>
-          <circle cx="20" cy="16" r="8" fill="#bcc0c4"/>
-          <ellipse cx="20" cy="36" rx="14" ry="10" fill="#bcc0c4"/>
-        </svg>
-      </div>
-    </div>
-  </div>
-</nav>
-
-<!-- LAYOUT -->
-<div class="layout">
-
-  <!-- LEFT SIDEBAR -->
-  <div class="sidebar-left">
-    <div class="sidebar-profile">
-      <div class="sidebar-profile-img">
-        <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" width="36" height="36">
-          <rect width="36" height="36" fill="#e4e6e9"/>
-          <circle cx="18" cy="14" r="7" fill="#bcc0c4"/>
-          <ellipse cx="18" cy="32" rx="12" ry="8" fill="#bcc0c4"/>
-        </svg>
-      </div>
-      <span class="sidebar-profile-name">나의 프로필</span>
-    </div>
-    <hr class="sidebar-divider">
-    <div class="sidebar-menu">
-      <div class="sidebar-item"><div class="sidebar-icon" style="background:#e7f3ff">👥</div>친구</div>
-      <div class="sidebar-item"><div class="sidebar-icon" style="background:#fff0e0">🎬</div>동영상</div>
-      <div class="sidebar-item"><div class="sidebar-icon" style="background:#fff0e0">🛍</div>마켓플레이스</div>
-      <div class="sidebar-item"><div class="sidebar-icon" style="background:#e0ffe0">📣</div>그룹</div>
-      <div class="sidebar-item"><div class="sidebar-icon" style="background:#ffe0e0">📅</div>이벤트</div>
-      <div class="sidebar-item"><div class="sidebar-icon" style="background:#f0e0ff">⚡</div>추억</div>
-    </div>
-  </div>
-
-  <!-- FEED -->
-  <div class="feed">
-    <!-- Create Post -->
-    <div class="create-post-card">
-      <div class="create-post-top">
-        <div class="comment-avatar" style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:1px solid var(--fb-border);">
-          <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
-            <rect width="40" height="40" fill="#e4e6e9"/>
-            <circle cx="20" cy="16" r="8" fill="#bcc0c4"/>
-            <ellipse cx="20" cy="36" rx="14" ry="10" fill="#bcc0c4"/>
-          </svg>
-        </div>
-        <div class="create-post-input" onclick="document.getElementById('openPostModal').click()">무슨 생각을 하고 계신가요?</div>
-      </div>
-      <div class="create-post-bottom">
-        <div class="create-post-action" onclick="document.getElementById('openPostModal').click()"><span>📹</span>라이브 방송</div>
-        <div class="create-post-action" onclick="document.getElementById('openPostModal').click()"><span>📷</span>사진/동영상</div>
-        <div class="create-post-action" onclick="document.getElementById('openPostModal').click()"><span>😊</span>기분/활동</div>
-      </div>
+    <div class="tab-bar">
+        <button class="tab-button active" onclick="openTab(event, 'site1')">사이트 1</button>
+        <button class="tab-button" onclick="openTab(event, 'site2')">사이트 2</button>
     </div>
 
-    <!-- Posts Container -->
-    <div id="postsContainer"></div>
-  </div>
-
-  <!-- RIGHT SIDEBAR -->
-  <div class="sidebar-right">
-    <div class="contacts-title">연락처</div>
-    <div class="contact-item">
-      <div class="contact-avatar">
-        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Mina&backgroundColor=b6e3f4" alt="Mina" onerror="this.src='data:image/svg+xml,<svg viewBox=\'0 0 36 36\' xmlns=\'http://www.w3.org/2000/svg\'><rect width=\'36\' height=\'36\' fill=\'%23e4e6e9\'/><circle cx=\'18\' cy=\'14\' r=\'7\' fill=\'%23bcc0c4\'/><ellipse cx=\'18\' cy=\'32\' rx=\'12\' ry=\'8\' fill=\'%23bcc0c4\'/></svg>'">
-        <div class="online-dot"></div>
-      </div>
-      <span class="contact-name">김민아</span>
+    <div id="site1" class="tab-content active">
+        <iframe src="site1.html"></iframe>
     </div>
-    <div class="contact-item">
-      <div class="contact-avatar">
-        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=James&backgroundColor=c0aede" alt="James" onerror="this.src='data:image/svg+xml,<svg viewBox=\'0 0 36 36\' xmlns=\'http://www.w3.org/2000/svg\'><rect width=\'36\' height=\'36\' fill=\'%23e4e6e9\'/><circle cx=\'18\' cy=\'14\' r=\'7\' fill=\'%23bcc0c4\'/><ellipse cx=\'18\' cy=\'32\' rx=\'12\' ry=\'8\' fill=\'%23bcc0c4\'/></svg>'">
-        <div class="online-dot"></div>
-      </div>
-      <span class="contact-name">이준혁</span>
+
+    <div id="site2" class="tab-content">
+        <iframe src="site2.html"></iframe>
     </div>
-    <div class="contact-item">
-      <div class="contact-avatar">
-        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sora&backgroundColor=ffd5dc" alt="Sora" onerror="this.src='data:image/svg+xml,<svg viewBox=\'0 0 36 36\' xmlns=\'http://www.w3.org/2000/svg\'><rect width=\'36\' height=\'36\' fill=\'%23e4e6e9\'/><circle cx=\'18\' cy=\'14\' r=\'7\' fill=\'%23bcc0c4\'/><ellipse cx=\'18\' cy=\'32\' rx=\'12\' ry=\'8\' fill=\'%23bcc0c4\'/></svg>'">
-      </div>
-      <span class="contact-name">박소라</span>
-    </div>
-    <div class="contact-item">
-      <div class="contact-avatar">
-        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Taeyang&backgroundColor=d1f7d6" alt="Taeyang">
-        <div class="online-dot"></div>
-      </div>
-      <span class="contact-name">최태양</span>
-    </div>
-  </div>
-</div>
 
-<!-- POST MODAL -->
-<div class="modal-overlay" id="postModal">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">게시물 만들기</span>
-      <button class="modal-close" id="closePostModal">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-author">
-        <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:1px solid var(--fb-border);flex-shrink:0;">
-          <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
-            <rect width="40" height="40" fill="#e4e6e9"/>
-            <circle cx="20" cy="16" r="8" fill="#bcc0c4"/>
-            <ellipse cx="20" cy="36" rx="14" ry="10" fill="#bcc0c4"/>
-          </svg>
-        </div>
-        <div>
-          <div id="modalUserName" class="modal-author-name">사용자</div>
-          <div class="modal-author-privacy">🌍 전체 공개 ▾</div>
-        </div>
-      </div>
-      <input type="text" class="modal-name-input" id="postUserName" placeholder="이름(ID)을 입력하세요" oninput="document.getElementById('modalUserName').textContent = this.value || '사용자'">
-      <textarea class="modal-textarea" id="postText" placeholder="무슨 생각을 하고 계신가요?" rows="4"></textarea>
+    <script>
+        function openTab(evt, tabId) {
+            // 모든 탭 컨텐츠 숨기기
+            const contents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < contents.length; i++) {
+                contents[i].classList.remove("active");
+            }
 
-      <div class="modal-image-section" id="imageDropZone" onclick="document.getElementById('fileInput').click()">
-        <span style="font-size:28px;">🖼</span>
-        <p>사진 추가</p>
-        <small>로컬 파일 업로드 또는 아래에 URL 입력</small>
-        <img id="modalPreviewImg" class="modal-preview-img" alt="미리보기">
-      </div>
-      <input type="file" id="fileInput" accept="image/*" onchange="handleFileUpload(event)">
-      <input type="url" class="modal-url-input" id="imageUrlInput" placeholder="이미지 URL 붙여넣기 (선택사항)" oninput="handleUrlInput(this.value)">
+            // 모든 탭 버튼 비활성화
+            const buttons = document.getElementsByClassName("tab-button");
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove("active");
+            }
 
-      <div class="modal-add-options">
-        <span>게시물에 추가</span>
-        <div class="modal-add-icons">
-          <div class="modal-icon-btn" title="사진/동영상" onclick="document.getElementById('fileInput').click()">📷</div>
-          <div class="modal-icon-btn" title="친구 태그">👤</div>
-          <div class="modal-icon-btn" title="기분/활동">😊</div>
-          <div class="modal-icon-btn" title="위치">📍</div>
-        </div>
-      </div>
-      <button class="modal-submit-btn" id="submitPost" onclick="submitPost()">게시</button>
-    </div>
-  </div>
-</div>
+            // 선택한 탭만 보이기
+            document.getElementById(tabId).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
 
-<script>
-// === DATA ===
-const users = [
-  {
-    id: 'u1', name: '김민아',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mina&backgroundColor=b6e3f4',
-  },
-  {
-    id: 'u2', name: '이준혁',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=James&backgroundColor=c0aede',
-  },
-  {
-    id: 'u3', name: '박소라',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sora&backgroundColor=ffd5dc',
-  }
-];
-
-const defaultAvatar = `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#e4e6e9"/><circle cx="20" cy="16" r="8" fill="#bcc0c4"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#bcc0c4"/></svg>`;
-
-const posts = [
-  {
-    id: 'p1',
-    userId: 'u1',
-    text: '오늘 한강에서 자전거 타고 왔어요 🚴‍♀️ 날씨가 너무 좋아서 기분도 최고! 다들 주말 잘 보내고 계신가요?',
-    image: 'https://images.unsplash.com/photo-1519120944692-1a8d8cfc107f?w=600&q=80',
-    time: '2시간 전',
-    likes: 42,
-    liked: false,
-    comments: [
-      { userId: 'u2', text: '와 부럽다! 저도 이번 주말에 가봐야겠어요 😄', time: '1시간 전' },
-      { userId: 'u3', text: '날씨 정말 좋았죠~ 저도 한강 갔다왔어요! 🌸', time: '45분 전' },
-    ]
-  },
-  {
-    id: 'p2',
-    userId: 'u2',
-    text: '드디어 새 카페 발견! ☕ 분위기도 음악도 커피도 완벽한 곳 찾았다. 강남 숨겨진 카페인데 여기 진짜 추천해요. 혼자 작업하기 딱 좋은 공간 🙌',
-    image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80',
-    time: '5시간 전',
-    likes: 87,
-    liked: false,
-    comments: [
-      { userId: 'u3', text: '어디 카페예요?? 저도 좀 알려줘요 🙏', time: '4시간 전' },
-      { userId: 'u1', text: '다음에 같이 가요! 분위기 너무 좋아 보여요 ✨', time: '3시간 전' },
-      { userId: 'u3', text: '저 지금 당장 가고 싶어요 ㅠㅠ', time: '2시간 전' },
-    ]
-  }
-];
-
-// === HELPERS ===
-function getUserById(id) { return users.find(u => u.id === id); }
-
-function avatarImg(src, size=40, name='') {
-  return `<img src="${src}" alt="${name}" width="${size}" height="${size}" style="width:${size}px;height:${size}px;object-fit:cover;display:block;" onerror="this.outerHTML='${defaultAvatar.replace(/'/g,"\\'")}'" >`;
-}
-
-function defaultAvatarSvg(size=40) {
-  return `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="${size}" height="${size}" fill="#e4e6e9"/><circle cx="${size/2}" cy="${size*0.4}" r="${size*0.2}" fill="#bcc0c4"/><ellipse cx="${size/2}" cy="${size*0.9}" rx="${size*0.35}" ry="${size*0.25}" fill="#bcc0c4"/></svg>`;
-}
-
-// === RENDER ===
-function renderPost(post) {
-  const user = getUserById(post.userId);
-  const commentsHTML = post.comments.map(c => renderComment(c)).join('');
-  const likeClass = post.liked ? 'liked' : '';
-
-  return `
-  <div class="post-card" id="post-${post.id}">
-    <div class="post-header">
-      <div class="post-author">
-        <div class="post-avatar">${avatarImg(user.avatar, 40, user.name)}</div>
-        <div class="post-author-info">
-          <span class="post-author-name">${user.name}</span>
-          <div class="post-time">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            ${post.time} · 🌍
-          </div>
-        </div>
-      </div>
-      <div class="post-more-btn">···</div>
-    </div>
-    <div class="post-text">${post.text}</div>
-    ${post.image ? `<div class="post-image"><img src="${post.image}" alt="게시물 이미지" loading="lazy" onerror="this.parentElement.style.display='none'"></div>` : ''}
-    <div class="post-stats">
-      <div class="post-stats-likes">
-        <span class="like-icon">👍</span>
-        <span class="heart-icon">❤️</span>
-        <span id="like-count-${post.id}">${post.likes}</span>
-      </div>
-      <div class="post-stats-right">댓글 ${post.comments.length}개</div>
-    </div>
-    <div class="post-actions">
-      <div class="post-action-btn ${likeClass}" onclick="toggleLike('${post.id}', this)">
-        <span>👍</span> 좋아요
-      </div>
-      <div class="post-action-btn">
-        <span>💬</span> 댓글 달기
-      </div>
-      <div class="post-action-btn">
-        <span>↗️</span> 공유하기
-      </div>
-    </div>
-    <div class="post-comments">
-      <div id="comments-${post.id}">${commentsHTML}</div>
-      <div class="comment-input-row">
-        <div class="comment-avatar" style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:1px solid var(--fb-border);flex-shrink:0;">
-          ${defaultAvatarSvg(32)}
-        </div>
-        <div class="comment-input-wrap">
-          <textarea class="comment-input" rows="1" placeholder="댓글을 입력하세요..." id="commentInput-${post.id}" onkeydown="handleCommentKey(event,'${post.id}')"></textarea>
-          <button class="comment-submit-btn" onclick="addComment('${post.id}')">➤</button>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-function renderComment(c) {
-  const user = getUserById(c.userId);
-  const isCustom = !user;
-  const name = isCustom ? (c.name || '사용자') : user.name;
-  const avatarHTML = isCustom
-    ? `<div style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:1px solid var(--fb-border);flex-shrink:0;">${defaultAvatarSvg(32)}</div>`
-    : `<div class="comment-avatar">${avatarImg(user.avatar, 32, user.name)}</div>`;
-
-  return `
-  <div class="comment-item">
-    ${avatarHTML}
-    <div>
-      <div class="comment-bubble">
-        <div class="comment-author">${name}</div>
-        <div class="comment-text">${c.text}</div>
-      </div>
-      <div class="comment-meta">
-        <span>좋아요</span><span>답글 달기</span><span>${c.time || '방금'}</span>
-      </div>
-    </div>
-  </div>`;
-}
-
-function renderAllPosts() {
-  const container = document.getElementById('postsContainer');
-  container.innerHTML = posts.map(renderPost).join('');
-}
-
-// === INTERACTIONS ===
-function toggleLike(postId, btn) {
-  const post = posts.find(p => p.id === postId);
-  if (!post) return;
-  post.liked = !post.liked;
-  post.likes += post.liked ? 1 : -1;
-  document.getElementById('like-count-' + postId).textContent = post.likes;
-  btn.classList.toggle('liked', post.liked);
-}
-
-function handleCommentKey(e, postId) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addComment(postId); }
-}
-
-function addComment(postId) {
-  const input = document.getElementById('commentInput-' + postId);
-  const text = input.value.trim();
-  if (!text) return;
-  const post = posts.find(p => p.id === postId);
-  const newComment = { userId: null, name: currentUserName || '나', text, time: '방금' };
-  post.comments.push(newComment);
-  const container = document.getElementById('comments-' + postId);
-  container.insertAdjacentHTML('beforeend', renderComment(newComment));
-  input.value = '';
-  // Update comment count
-  const statsEl = document.querySelector(`#post-${postId} .post-stats-right`);
-  if (statsEl) statsEl.textContent = `댓글 ${post.comments.length}개`;
-}
-
-// === MODAL ===
-let selectedImageData = null;
-let currentUserName = '';
-
-document.getElementById('openPostModal').addEventListener('click', () => {
-  document.getElementById('postModal').classList.add('active');
-  document.getElementById('postText').focus();
-});
-document.getElementById('closePostModal').addEventListener('click', closeModal);
-document.getElementById('postModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('postModal')) closeModal();
-});
-
-function closeModal() {
-  document.getElementById('postModal').classList.remove('active');
-  document.getElementById('postText').value = '';
-  document.getElementById('postUserName').value = '';
-  document.getElementById('imageUrlInput').value = '';
-  document.getElementById('modalPreviewImg').style.display = 'none';
-  document.getElementById('modalUserName').textContent = '사용자';
-  selectedImageData = null;
-}
-
-function handleFileUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    selectedImageData = e.target.result;
-    showPreview(selectedImageData);
-  };
-  reader.readAsDataURL(file);
-}
-
-function handleUrlInput(url) {
-  if (url) {
-    selectedImageData = url;
-    showPreview(url);
-  } else {
-    selectedImageData = null;
-    document.getElementById('modalPreviewImg').style.display = 'none';
-  }
-}
-
-function showPreview(src) {
-  const img = document.getElementById('modalPreviewImg');
-  img.src = src;
-  img.style.display = 'block';
-  img.onerror = () => { img.style.display = 'none'; selectedImageData = null; };
-}
-
-function submitPost() {
-  const text = document.getElementById('postText').value.trim();
-  const nameInput = document.getElementById('postUserName').value.trim();
-  if (!text && !selectedImageData) return;
-
-  currentUserName = nameInput || '나';
-
-  const newPost = {
-    id: 'p' + Date.now(),
-    userId: null,
-    userName: currentUserName,
-    text,
-    image: selectedImageData || null,
-    time: '방금 전',
-    likes: 0,
-    liked: false,
-    comments: []
-  };
-
-  posts.unshift(newPost);
-  const container = document.getElementById('postsContainer');
-  container.insertAdjacentHTML('afterbegin', renderCustomPost(newPost));
-  closeModal();
-}
-
-function renderCustomPost(post) {
-  return `
-  <div class="post-card" id="post-${post.id}">
-    <div class="post-header">
-      <div class="post-author">
-        <div class="post-avatar" style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:1px solid var(--fb-border);">${defaultAvatarSvg(40)}</div>
-        <div class="post-author-info">
-          <span class="post-author-name">${post.userName}</span>
-          <div class="post-time">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            ${post.time} · 🌍
-          </div>
-        </div>
-      </div>
-      <div class="post-more-btn">···</div>
-    </div>
-    ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
-    ${post.image ? `<div class="post-image"><img src="${post.image}" alt="게시물 이미지" style="width:100%;max-height:500px;object-fit:cover;" onerror="this.parentElement.style.display='none'"></div>` : ''}
-    <div class="post-stats">
-      <div class="post-stats-likes">
-        <span class="like-icon">👍</span>
-        <span id="like-count-${post.id}">${post.likes}</span>
-      </div>
-      <div class="post-stats-right">댓글 0개</div>
-    </div>
-    <div class="post-actions">
-      <div class="post-action-btn" onclick="toggleLike('${post.id}', this)"><span>👍</span> 좋아요</div>
-      <div class="post-action-btn"><span>💬</span> 댓글 달기</div>
-      <div class="post-action-btn"><span>↗️</span> 공유하기</div>
-    </div>
-    <div class="post-comments">
-      <div id="comments-${post.id}"></div>
-      <div class="comment-input-row">
-        <div style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:1px solid var(--fb-border);flex-shrink:0;">${defaultAvatarSvg(32)}</div>
-        <div class="comment-input-wrap">
-          <textarea class="comment-input" rows="1" placeholder="댓글을 입력하세요..." id="commentInput-${post.id}" onkeydown="handleCommentKey(event,'${post.id}')"></textarea>
-          <button class="comment-submit-btn" onclick="addComment('${post.id}')">➤</button>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-// INIT
-renderAllPosts();
-</script>
 </body>
 </html>
