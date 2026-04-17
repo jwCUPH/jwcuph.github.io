@@ -65,7 +65,7 @@
             height: 26px;
         }
 
-        /* --- 종 달랑달랑 애니메이션 정의 --- */
+        /* 종 달랑달랑 애니메이션 정의 */
         @keyframes ringing {
             0% { transform: scale(1.15) rotate(0deg); }
             25% { transform: scale(1.15) rotate(-15deg); }
@@ -74,10 +74,16 @@
             100% { transform: scale(1.15) rotate(0deg); }
         }
 
-        /* 마우스를 올렸을 때 애니메이션 무한 반복(infinite) */
+        /* 마우스 호버 시 무한 반복 */
         .notice-bell-btn:hover {
             color: #f1c40f; 
             animation: ringing 0.4s ease-in-out infinite;
+        }
+
+        /* --- 팝업 닫힐 때 강제로 종 울리는 클래스 --- */
+        .notice-bell-btn.active-ring {
+            color: #f1c40f; 
+            animation: ringing 0.4s ease-in-out 2; /* 2번 흔들림 (총 0.8초) */
         }
 
         /* iframe이 들어가는 컨텐츠 영역 */
@@ -98,7 +104,7 @@
             border: none;
         }
 
-        /* 팝업 모달 스타일 */
+        /* 팝업 모달 스타일 (이동 및 크기/투명도 애니메이션) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -132,14 +138,14 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             overflow: hidden;
 
-            transform-origin: top right;
-            transform: scale(0);
+            transform-origin: center;
+            transform: translate(45vw, -45vh) scale(0);
             opacity: 0;
-            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
         }
 
         .modal-overlay.show .modal-content {
-            transform: scale(1);
+            transform: translate(0, 0) scale(1);
             opacity: 1;
         }
 
@@ -183,7 +189,7 @@
         <button class="tab-button" onclick="openTab(event, 'site2')">from GPT</button>
         <button class="tab-button" onclick="openTab(event, 'site3')">from Gemini</button>
         
-        <button class="notice-bell-btn" onclick="toggleNotice()" title="공지사항 보기">
+        <button class="notice-bell-btn" id="bellBtn" onclick="toggleNotice()" title="공지사항 보기">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
             </svg>
@@ -203,12 +209,14 @@
     </div>
 
     <script>
+        // 페이지가 처음 열릴 때 애니메이션과 함께 팝업 띄우기
         window.onload = function() {
             setTimeout(function() {
                 document.getElementById('popupModal').classList.add('show');
             }, 100); 
         };
 
+        // 탭 전환 함수
         function openTab(evt, tabId) {
             const contents = document.getElementsByClassName("tab-content");
             for (let i = 0; i < contents.length; i++) {
@@ -224,9 +232,27 @@
             evt.currentTarget.classList.add("active");
         }
 
+        // --- 공지사항 팝업 열기/닫기 토글 및 종 흔들기 함수 ---
         function toggleNotice() {
             const modal = document.getElementById('popupModal');
-            modal.classList.toggle('show');
+            const bell = document.getElementById('bellBtn');
+            
+            // 팝업이 열려있는 상태에서 닫기를 누른 경우
+            if (modal.classList.contains('show')) {
+                modal.classList.remove('show'); // 팝업 닫기
+                
+                // 종 애니메이션 클래스 추가 (강제 실행)
+                bell.classList.add('active-ring');
+                
+                // 애니메이션 시간(0.8초)이 끝난 후 클래스 제거하여 초기화
+                setTimeout(() => {
+                    bell.classList.remove('active-ring');
+                }, 800);
+            } 
+            // 팝업이 닫혀있는 상태에서 열기를 누른 경우
+            else {
+                modal.classList.add('show'); // 팝업 열기
+            }
         }
     </script>
 
