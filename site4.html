@@ -1,0 +1,1648 @@
+Facebook 기능을 대폭 고도화한 완전판을 제작해드리겠습니다!
+
+```python
+import os
+
+# Facebook 고도화 버전 HTML 생성
+html_content = '''<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook - 피드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        /* 헤더 스타일 */
+        .header {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 8px 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1877f2;
+            cursor: pointer;
+        }
+
+        .search-box {
+            background-color: #f0f2f5;
+            border-radius: 50px;
+            padding: 10px 16px;
+            border: none;
+            width: 240px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e4e6eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            position: relative;
+        }
+
+        .notification-icon:hover {
+            background-color: #d8dadf;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background-color: #fa3e3e;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .create-post-btn {
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .create-post-btn:hover {
+            background-color: #166fe5;
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            object-fit: cover;
+        }
+
+        /* 메인 컨텐츠 */
+        .main-content {
+            max-width: 680px;
+            margin: 70px auto 20px;
+            padding: 0 16px;
+        }
+
+        /* 프로필 카드 */
+        .profile-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            margin-bottom: 16px;
+            padding: 16px;
+            display: none;
+        }
+
+        .profile-card.active {
+            display: block;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .profile-pic-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 3px solid #1877f2;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #050505;
+        }
+
+        .profile-status {
+            color: #65676b;
+            margin-top: 4px;
+            font-size: 15px;
+        }
+
+        .profile-edit-btn {
+            background-color: #e4e6eb;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .profile-edit-btn:hover {
+            background-color: #d8dadf;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 24px;
+            padding: 16px 0;
+            border-top: 1px solid #e4e6eb;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: #050505;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #65676b;
+            margin-top: 4px;
+        }
+
+        /* 게시물 카드 */
+        .post-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .post-header {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .post-profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .post-user-info {
+            flex: 1;
+        }
+
+        .post-username {
+            font-weight: 600;
+            font-size: 15px;
+            color: #050505;
+            cursor: pointer;
+        }
+
+        .post-username:hover {
+            text-decoration: underline;
+        }
+
+        .post-time {
+            font-size: 13px;
+            color: #65676b;
+        }
+
+        .post-menu-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #65676b;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .post-menu-btn:hover {
+            background-color: #f0f2f5;
+        }
+
+        .post-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f0f2f5;
+        }
+
+        .post-content {
+            padding: 0 16px 12px;
+            font-size: 15px;
+            line-height: 1.3333;
+            color: #050505;
+            white-space: pre-wrap;
+        }
+
+        .post-content.editing {
+            display: none;
+        }
+
+        .post-edit-textarea {
+            display: none;
+            width: calc(100% - 32px);
+            margin: 0 16px 12px;
+            padding: 8px;
+            font-size: 15px;
+            border: 1px solid #ccd0d5;
+            border-radius: 4px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .post-edit-textarea.active {
+            display: block;
+        }
+
+        .post-edit-actions {
+            display: none;
+            padding: 0 16px 12px;
+            gap: 8px;
+        }
+
+        .post-edit-actions.active {
+            display: flex;
+        }
+
+        .edit-save-btn, .edit-cancel-btn {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .edit-save-btn {
+            background-color: #1877f2;
+            color: white;
+        }
+
+        .edit-cancel-btn {
+            background-color: #e4e6eb;
+            color: #050505;
+        }
+
+        .post-image {
+            width: 100%;
+            max-height: 600px;
+            object-fit: cover;
+            display: block;
+            cursor: pointer;
+        }
+
+        .post-stats {
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            color: #65676b;
+        }
+
+        .likes-count {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .likes-count:hover {
+            text-decoration: underline;
+        }
+
+        .like-icon {
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(#1877f2, #1877f2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+        }
+
+        .comments-shares {
+            display: flex;
+            gap: 12px;
+        }
+
+        .stat-link {
+            cursor: pointer;
+        }
+
+        .stat-link:hover {
+            text-decoration: underline;
+        }
+
+        .post-actions {
+            padding: 4px 8px;
+            border-top: 1px solid #e4e6eb;
+            border-bottom: 1px solid #e4e6eb;
+            display: flex;
+            gap: 4px;
+        }
+
+        .action-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #65676b;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .action-btn:hover {
+            background-color: #f0f2f5;
+        }
+
+        .action-btn.liked {
+            color: #1877f2;
+        }
+
+        .action-btn.saved {
+            color: #f7b928;
+        }
+
+        /* 댓글 섹션 */
+        .comments-section {
+            padding: 0 16px 12px;
+        }
+
+        .comment {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            position: relative;
+        }
+
+        .comment-profile-pic {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-bubble {
+            background-color: #f0f2f5;
+            border-radius: 18px;
+            padding: 8px 12px;
+            display: inline-block;
+            position: relative;
+        }
+
+        .comment-username {
+            font-weight: 600;
+            font-size: 13px;
+            color: #050505;
+            cursor: pointer;
+        }
+
+        .comment-username:hover {
+            text-decoration: underline;
+        }
+
+        .comment-text {
+            font-size: 13px;
+            color: #050505;
+            margin-top: 2px;
+        }
+
+        .comment-actions {
+            font-size: 12px;
+            color: #65676b;
+            margin-top: 4px;
+            margin-left: 12px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .comment-action {
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .comment-action:hover {
+            text-decoration: underline;
+        }
+
+        .comment-action.liked {
+            color: #1877f2;
+        }
+
+        .comment-time {
+            font-size: 12px;
+            color: #65676b;
+        }
+
+        .comment-menu-btn {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #65676b;
+            padding: 4px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .comment:hover .comment-menu-btn {
+            display: block;
+        }
+
+        .comment-menu-btn:hover {
+            background-color: #e4e6eb;
+        }
+
+        .reply-section {
+            margin-left: 40px;
+            margin-top: 8px;
+        }
+
+        /* 댓글 입력 */
+        .comment-input-section {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            padding: 8px 0;
+        }
+
+        .comment-input {
+            flex: 1;
+            background-color: #f0f2f5;
+            border: none;
+            border-radius: 18px;
+            padding: 8px 12px;
+            font-size: 15px;
+        }
+
+        .comment-input:focus {
+            outline: none;
+            background-color: #e4e6eb;
+        }
+
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+            width: 500px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 16px;
+            border-bottom: 1px solid #e4e6eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #050505;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #e4e6eb;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: #65676b;
+        }
+
+        .modal-close:hover {
+            background-color: #d8dadf;
+        }
+
+        .modal-body {
+            padding: 16px;
+        }
+
+        .modal-user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            border: none;
+            font-size: 24px;
+            resize: none;
+            min-height: 100px;
+            font-family: inherit;
+            margin-bottom: 12px;
+        }
+
+        .modal-textarea:focus {
+            outline: none;
+        }
+
+        .modal-textarea::placeholder {
+            color: #bcc0c4;
+        }
+
+        .image-upload-section {
+            border: 2px dashed #e4e6eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .image-input {
+            margin-bottom: 8px;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ccd0d5;
+            border-radius: 6px;
+            font-size: 15px;
+            margin-top: 8px;
+        }
+
+        .image-preview {
+            margin-top: 12px;
+            max-width: 100%;
+            border-radius: 8px;
+            max-height: 300px;
+            object-fit: cover;
+        }
+
+        .modal-submit-btn {
+            width: 100%;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .modal-submit-btn:hover {
+            background-color: #166fe5;
+        }
+
+        .modal-submit-btn:disabled {
+            background-color: #e4e6eb;
+            color: #bcc0c4;
+            cursor: not-allowed;
+        }
+
+        /* 프로필 수정 모달 */
+        .profile-edit-field {
+            margin-bottom: 16px;
+        }
+
+        .profile-edit-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            color: #050505;
+        }
+
+        .profile-edit-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccd0d5;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        .profile-pic-upload {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .profile-pic-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* 좋아요 목록 모달 */
+        .likes-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .like-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .like-item:hover {
+            background-color: #f0f2f5;
+        }
+
+        /* 이미지 뷰어 모달 */
+        .image-viewer {
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .image-viewer .modal-content {
+            background: transparent;
+            box-shadow: none;
+            max-width: 95%;
+            max-height: 95vh;
+        }
+
+        .viewer-image {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        /* 알림 드롭다운 */
+        .notification-dropdown {
+            position: absolute;
+            top: 50px;
+            right: 120px;
+            background-color: white;
+            width: 360px;
+            max-height: 480px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            display: none;
+            overflow-y: auto;
+        }
+
+        .notification-dropdown.show {
+            display: block;
+        }
+
+        .notification-header {
+            padding: 16px;
+            border-bottom: 1px solid #e4e6eb;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .notification-item {
+            padding: 12px 16px;
+            display: flex;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            background-color: #f0f2f5;
+        }
+
+        .notification-item.unread {
+            background-color: #e7f3ff;
+        }
+
+        .notification-text {
+            flex: 1;
+            font-size: 15px;
+        }
+
+        .notification-time {
+            font-size: 13px;
+            color: #65676b;
+            margin-top: 4px;
+        }
+
+        /* 공유 옵션 */
+        .share-options {
+            display: grid;
+            gap: 8px;
+        }
+
+        .share-option {
+            padding: 12px;
+            border: 1px solid #e4e6eb;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .share-option:hover {
+            background-color: #f0f2f5;
+        }
+
+        .hide {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <div class="header">
+        <div class="header-left">
+            <div class="logo" onclick="showFeed()">facebook</div>
+            <input type="text" class="search-box" placeholder="Facebook 검색">
+        </div>
+        <div class="header-right">
+            <div class="notification-icon" onclick="toggleNotifications()">
+                🔔
+                <span class="notification-badge" id="notificationBadge">5</span>
+            </div>
+            <button class="create-post-btn" onclick="openCreatePostModal()">게시물 등록</button>
+            <img id="headerProfilePic" src="https://ui-avatars.com/api/?name=ME&background=1877f2&color=fff&size=128" 
+                 alt="내 프로필" class="profile-icon" onclick="showProfile()">
+        </div>
+    </div>
+
+    <!-- 알림 드롭다운 -->
+    <div class="notification-dropdown" id="notificationDropdown">
+        <div class="notification-header">알림</div>
+        <div class="notification-item unread">
+            <img src="https://ui-avatars.com/api/?name=김민수&background=4267B2&color=fff&size=128" 
+                 alt="김민수" class="comment-profile-pic">
+            <div>
+                <div class="notification-text"><strong>김민수</strong>님이 회원님의 게시물에 좋아요를 눌렀습니다.</div>
+                <div class="notification-time">5분 전</div>
+            </div>
+        </div>
+        <div class="notification-item unread">
+            <img src="https://ui-avatars.com/api/?name=이지은&background=42B72A&color=fff&size=128" 
+                 alt="이지은" class="comment-profile-pic">
+            <div>
+                <div class="notification-text"><strong>이지은</strong>님이 회원님의 댓글에 답글을 달았습니다.</div>
+                <div class="notification-time">1시간 전</div>
+            </div>
+        </div>
+        <div class="notification-item">
+            <img src="https://ui-avatars.com/api/?name=박준호&background=FF6B6B&color=fff&size=128" 
+                 alt="박준호" class="comment-profile-pic">
+            <div>
+                <div class="notification-text"><strong>박준호</strong>님이 회원님의 게시물을 공유했습니다.</div>
+                <div class="notification-time">3시간 전</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="main-content">
+        <!-- 프로필 카드 -->
+        <div class="profile-card" id="profileCard">
+            <div class="profile-header">
+                <img id="profilePicLarge" src="https://ui-avatars.com/api/?name=ME&background=1877f2&color=fff&size=256" 
+                     alt="내 프로필" class="profile-pic-large" onclick="openProfilePicModal()">
+                <div class="profile-info">
+                    <div class="profile-name" id="profileName">나</div>
+                    <div class="profile-status" id="profileStatus">안녕하세요! Facebook을 사용하고 있습니다 😊</div>
+                    <button class="profile-edit-btn" onclick="openProfileEditModal()">프로필 편집</button>
+                </div>
+            </div>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="postCount">0</div>
+                    <div class="stat-label">게시물</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">42</div>
+                    <div class="stat-label">친구</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="totalLikes">0</div>
+                    <div class="stat-label">받은 좋아요</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 피드 -->
+        <div id="postsFeed">
+            <!-- 게시물들이 여기에 동적으로 추가됩니다 -->
+        </div>
+    </div>
+
+    <!-- 게시물 등록 모달 -->
+    <div class="modal" id="createPostModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">게시물 만들기</div>
+                <button class="modal-close" onclick="closeCreatePostModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-user-info">
+                    <img id="createPostProfilePic" src="https://ui-avatars.com/api/?name=ME&background=1877f2&color=fff&size=128" 
+                         alt="내 프로필" class="post-profile-pic">
+                    <div class="post-username" id="createPostUsername">나</div>
+                </div>
+                <textarea class="modal-textarea" id="postContent" 
+                          placeholder="무슨 생각을 하고 계신가요?"></textarea>
+                
+                <div class="image-upload-section">
+                    <div style="font-weight: 600; margin-bottom: 8px;">사진 추가</div>
+                    <input type="file" id="imageFile" class="image-input" 
+                           accept="image/*" onchange="handleFileUpload(event)">
+                    <div style="color: #65676b; font-size: 14px; margin: 8px 0;">또는</div>
+                    <input type="text" id="imageUrl" class="url-input" 
+                           placeholder="이미지 URL을 입력하세요" onchange="handleUrlInput(event)">
+                    <img id="imagePreview" class="image-preview" style="display: none;">
+                </div>
+
+                <button class="modal-submit-btn" onclick="createPost()">게시</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 프로필 편집 모달 -->
+    <div class="modal" id="profileEditModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">프로필 편집</div>
+                <button class="modal-close" onclick="closeProfileEditModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-pic-upload">
+                    <img id="editProfilePicPreview" src="https://ui-avatars.com/api/?name=ME&background=1877f2&color=fff&size=128" 
+                         alt="프로필 사진" class="profile-pic-preview">
+                    <div style="flex: 1;">
+                        <div class="profile-edit-label">프로필 사진</div>
+                        <input type="file" id="profilePicFile" accept="image/*" onchange="handleProfilePicUpload(event)">
+                        <div style="color: #65676b; font-size: 14px; margin: 8px 0;">또는</div>
+                        <input type="text" id="profilePicUrl" class="url-input" 
+                               placeholder="이미지 URL 입력" onchange="handleProfilePicUrl(event)">
+                    </div>
+                </div>
+                
+                <div class="profile-edit-field">
+                    <label class="profile-edit-label">이름</label>
+                    <input type="text" id="editProfileName" class="profile-edit-input" value="나">
+                </div>
+                
+                <div class="profile-edit-field">
+                    <label class="profile-edit-label">상태 메시지</label>
+                    <input type="text" id="editProfileStatus" class="profile-edit-input" 
+                           value="안녕하세요! Facebook을 사용하고 있습니다 😊">
+                </div>
+
+                <button class="modal-submit-btn" onclick="saveProfile()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 좋아요 목록 모달 -->
+    <div class="modal" id="likesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">좋아요</div>
+                <button class="modal-close" onclick="closeLikesModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="likes-list" id="likesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공유 모달 -->
+    <div class="modal" id="shareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">공유하기</div>
+                <button class="modal-close" onclick="closeShareModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="share-options">
+                    <div class="share-option" onclick="shareToTimeline()">
+                        <span style="font-size: 24px;">📱</span>
+                        <div>
+                            <div style="font-weight: 600;">내 타임라인에 공유</div>
+                            <div style="font-size: 13px; color: #65676b;">프로필에 게시물 공유</div>
+                        </div>
+                    </div>
+                    <div class="share-option" onclick="shareToMessenger()">
+                        <span style="font-size: 24px;">💬</span>
+                        <div>
+                            <div style="font-weight: 600;">Messenger로 보내기</div>
+                            <div style="font-size: 13px; color: #65676b;">친구에게 메시지로 전송</div>
+                        </div>
+                    </div>
+                    <div class="share-option" onclick="copyLink()">
+                        <span style="font-size: 24px;">🔗</span>
+                        <div>
+                            <div style="font-weight: 600;">링크 복사</div>
+                            <div style="font-size: 13px; color: #65676b;">링크를 클립보드에 복사</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 이미지 뷰어 모달 -->
+    <div class="modal image-viewer" id="imageViewerModal" onclick="closeImageViewer()">
+        <div class="modal-content">
+            <img id="viewerImage" class="viewer-image" alt="이미지">
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let currentUser = {
+            name: '나',
+            profilePic: 'https://ui-avatars.com/api/?name=ME&background=1877f2&color=fff&size=128',
+            status: '안녕하세요! Facebook을 사용하고 있습니다 😊'
+        };
+
+        let posts = [];
+        let currentEditingPost = null;
+        let currentSharePost = null;
+        let notificationCount = 5;
+
+        // 초기 샘플 게시물 생성
+        function initializeSamplePosts() {
+            const samplePosts = [
+                {
+                    id: 1,
+                    author: '김민수',
+                    authorPic: 'https://ui-avatars.com/api/?name=김민수&background=4267B2&color=fff&size=128',
+                    time: '3시간 전',
+                    content: '오늘 한강에서 찍은 석양 사진이에요! 날씨가 정말 좋았어요 🌅',
+                    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
+                    likes: ['이지은', '박준호'],
+                    comments: [
+                        { author: '이지은', authorPic: 'https://ui-avatars.com/api/?name=이지은&background=42B72A&color=fff&size=128', 
+                          text: '와 진짜 예쁘다! 저도 가고 싶어요 ㅠㅠ', time: '2시간 전', likes: [] },
+                        { author: '박준호', authorPic: 'https://ui-avatars.com/api/?name=박준호&background=FF6B6B&color=fff&size=128', 
+                          text: '사진 실력 대박이네요! 카메라 뭐 쓰세요?', time: '1시간 전', likes: ['김민수'] }
+                    ],
+                    saved: false
+                },
+                {
+                    id: 2,
+                    author: '이지은',
+                    authorPic: 'https://ui-avatars.com/api/?name=이지은&background=42B72A&color=fff&size=128',
+                    time: '5시간 전',
+                    content: '집에서 만든 딸기 케이크🍰 생각보다 잘 만들어져서 뿌듯해요! 레시피 궁금하신 분들은 댓글 남겨주세요~',
+                    image: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800&h=600&fit=crop',
+                    likes: ['박준호', '김민수'],
+                    comments: [
+                        { author: '박준호', authorPic: 'https://ui-avatars.com/api/?name=박준호&background=FF6B6B&color=fff&size=128', 
+                          text: '와 진짜 맛있어 보여요!! 레시피 공유 부탁드려요 🙏', time: '4시간 전', likes: ['이지은'] },
+                        { author: '김민수', authorPic: 'https://ui-avatars.com/api/?name=김민수&background=4267B2&color=fff&size=128', 
+                          text: '완전 프로 수준인데요? 👍👍', time: '3시간 전', likes: [] }
+                    ],
+                    saved: false
+                }
+            ];
+
+            posts = samplePosts;
+            renderPosts();
+        }
+
+        // 게시물 렌더링
+        function renderPosts() {
+            const feed = document.getElementById('postsFeed');
+            feed.innerHTML = '';
+
+            posts.forEach(post => {
+                const postElement = createPostElement(post);
+                feed.appendChild(postElement);
+            });
+
+            updateStats();
+        }
+
+        // 게시물 요소 생성
+        function createPostElement(post) {
+            const isMyPost = post.author === currentUser.name;
+            const isLiked = post.likes.includes(currentUser.name);
+            
+            const postDiv = document.createElement('div');
+            postDiv.className = 'post-card';
+            postDiv.setAttribute('data-post-id', post.id);
+
+            postDiv.innerHTML = `
+                <div class="post-header">
+                    <img src="${post.authorPic}" alt="${post.author}" class="post-profile-pic">
+                    <div class="post-user-info">
+                        <div class="post-username">${post.author}</div>
+                        <div class="post-time">${post.time}</div>
+                    </div>
+                    ${isMyPost ? `
+                    <div class="post-dropdown">
+                        <button class="post-menu-btn" onclick="togglePostMenu(${post.id})">⋯</button>
+                        <div class="dropdown-content" id="postMenu${post.id}">
+                            <div class="dropdown-item" onclick="editPost(${post.id})">
+                                <span>✏️</span> 게시물 수정
+                            </div>
+                            <div class="dropdown-item" onclick="deletePost(${post.id})">
+                                <span>🗑️</span> 게시물 삭제
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="post-content" id="postContent${post.id}">${post.content}</div>
+                <textarea class="post-edit-textarea" id="postEdit${post.id}">${post.content}</textarea>
+                <div class="post-edit-actions" id="postEditActions${post.id}">
+                    <button class="edit-save-btn" onclick="savePostEdit(${post.id})">저장</button>
+                    <button class="edit-cancel-btn" onclick="cancelPostEdit(${post.id})">취소</button>
+                </div>
+                ${post.image ? `<img src="${post.image}" alt="게시물 이미지" class="post-image" onclick="openImageViewer('${post.image}')">` : ''}
+                <div class="post-stats">
+                    <div class="likes-count" onclick="showLikes(${post.id})">
+                        ${post.likes.length > 0 ? `<span class="like-icon">👍</span> ${post.likes.length}` : ''}
+                    </div>
+                    <div class="comments-shares">
+                        <span class="stat-link">댓글 ${post.comments.length}개</span>
+                        <span class="stat-link">공유 0회</span>
+                    </div>
+                </div>
+                <div class="post-actions">
+                    <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(${post.id})">
+                        👍 좋아요
+                    </button>
+                    <button class="action-btn" onclick="focusCommentInput(${post.id})">
+                        💬 댓글달기
+                    </button>
+                    <button class="action-btn" onclick="openShareModal(${post.id})">
+                        ↗️ 공유하기
+                    </button>
+                    <button class="action-btn ${post.saved ? 'saved' : ''}" onclick="toggleSave(${post.id})">
+                        ${post.saved ? '⭐' : '☆'} 저장
+                    </button>
+                </div>
+                <div class="comments-section">
+                    ${post.comments.map((comment, index) => createCommentHTML(comment, post.id, index)).join('')}
+                    <div class="comment-input-section">
+                        <img src="${currentUser.profilePic}" alt="내 프로필" class="comment-profile-pic">
+                        <input type="text" class="comment-input" id="commentInput${post.id}" 
+                               placeholder="댓글을 입력하세요..." 
+                               onkeypress="handleCommentSubmit(event, ${post.id})">
+                    </div>
+                </div>
+            `;
+
+            return postDiv;
+        }
+
+        // 댓글 HTML 생성
+        function createCommentHTML(comment, postId, commentIndex) {
+            const isMyComment = comment.author === currentUser.name;
+            const isLiked = comment.likes && comment.likes.includes(currentUser.name);
+            
+            return `
+                <div class="comment">
+                    <img src="${comment.authorPic}" alt="${comment.author}" class="comment-profile-pic">
+                    <div class="comment-content">
+                        <div class="comment-bubble">
+                            <div class="comment-username">${comment.author}</div>
+                            <div class="comment-text">${comment.text}</div>
+                        </div>
+                        <div class="comment-actions">
+                            <span class="comment-action ${isLiked ? 'liked' : ''}" onclick="toggleCommentLike(${postId}, ${commentIndex})">
+                                좋아요 ${comment.likes && comment.likes.length > 0 ? comment.likes.length : ''}
+                            </span>
+                            <span class="comment-action" onclick="replyToComment(${postId}, ${commentIndex})">답글달기</span>
+                            <span class="comment-time">${comment.time}</span>
+                            ${isMyComment ? `<span class="comment-action" onclick="deleteComment(${postId}, ${commentIndex})">삭제</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 좋아요 토글
+        function toggleLike(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            const index = post.likes.indexOf(currentUser.name);
+            if (index > -1) {
+                post.likes.splice(index, 1);
+            } else {
+                post.likes.push(currentUser.name);
+                addNotification(`${currentUser.name}님이 회원님의 게시물에 좋아요를 눌렀습니다.`);
+            }
+
+            renderPosts();
+        }
+
+        // 댓글 좋아요 토글
+        function toggleCommentLike(postId, commentIndex) {
+            const post = posts.find(p => p.id === postId);
+            if (!post || !post.comments[commentIndex]) return;
+
+            const comment = post.comments[commentIndex];
+            if (!comment.likes) comment.likes = [];
+
+            const index = comment.likes.indexOf(currentUser.name);
+            if (index > -1) {
+                comment.likes.splice(index, 1);
+            } else {
+                comment.likes.push(currentUser.name);
+            }
+
+            renderPosts();
+        }
+
+        // 저장 토글
+        function toggleSave(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            post.saved = !post.saved;
+            renderPosts();
+        }
+
+        // 댓글 작성
+        function handleCommentSubmit(event, postId) {
+            if (event.key === 'Enter' && event.target.value.trim()) {
+                const post = posts.find(p => p.id === postId);
+                if (!post) return;
+
+                const newComment = {
+                    author: currentUser.name,
+                    authorPic: currentUser.profilePic,
+                    text: event.target.value.trim(),
+                    time: '방금 전',
+                    likes: []
+                };
+
+                post.comments.push(newComment);
+                renderPosts();
+                
+                addNotification(`${currentUser.name}님이 댓글을 달았습니다.`);
+            }
+        }
+
+        // 댓글 삭제
+        function deleteComment(postId, commentIndex) {
+            if (!confirm('댓글을 삭제하시겠습니까?')) return;
+
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            post.comments.splice(commentIndex, 1);
+            renderPosts();
+        }
+
+        // 댓글에 답글
+        function replyToComment(postId, commentIndex) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            const comment = post.comments[commentIndex];
+            const input = document.getElementById(`commentInput${postId}`);
+            input.value = `@${comment.author} `;
+            input.focus();
+        }
+
+        // 댓글 입력창 포커스
+        function focusCommentInput(postId) {
+            const input = document.getElementById(`commentInput${postId}`);
+            if (input) input.focus();
+        }
+
+        // 게시물 메뉴 토글
+        function togglePostMenu(postId) {
+            const menu = document.getElementById(`postMenu${postId}`);
+            menu.classList.toggle('show');
+            
+            // 다른 메뉴 닫기
+            document.querySelectorAll('.dropdown-content').forEach(m => {
+                if (m.id !== `postMenu${postId}`) {
+                    m.classList.remove('show');
+                }
+            });
+        }
+
+        // 게시물 수정
+        function editPost(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            const content = document.getElementById(`postContent${postId}`);
+            const textarea = document.getElementById(`postEdit${postId}`);
+            const actions = document.getElementById(`postEditActions${postId}`);
+
+            content.classList.add('editing');
+            textarea.classList.add('active');
+            actions.classList.add('active');
+
+            togglePostMenu(postId);
+        }
+
+        // 게시물 수정 저장
+        function savePostEdit(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            const textarea = document.getElementById(`postEdit${postId}`);
+            post.content = textarea.value;
+
+            const content = document.getElementById(`postContent${postId}`);
+            const actions = document.getElementById(`postEditActions${postId}`);
+
+            content.textContent = post.content;
+            content.classList.remove('editing');
+            textarea.classList.remove('active');
+            actions.classList.remove('active');
+        }
+
+        // 게시물 수정 취소
+        function cancelPostEdit(postId) {
+            const content = document.getElementById(`postContent${postId}`);
+            const textarea = document.getElementById(`postEdit${postId}`);
+            const actions = document.getElementById(`postEditActions${postId}`);
+
+            content.classList.remove('editing');
+            textarea.classList.remove('active');
+            actions.classList.remove('active');
+        }
+
+        // 게시물 삭제
+        function deletePost(postId) {
+            if (!confirm('게시물을 삭제하시겠습니까?')) return;
+
+            const index = posts.findIndex(p => p.id === postId);
+            if (index > -1) {
+                posts.splice(index, 1);
+                renderPosts();
+            }
+        }
+
+        // 새 게시물 작성 모달
+        function openCreatePostModal() {
+            document.getElementById('createPostModal').classList.add('active');
+            document.getElementById('createPostProfilePic').src = currentUser.profilePic;
+            document.getElementById('createPostUsername').textContent = currentUser.name;
+        }
+
+        function closeCreatePostModal() {
+            document.getElementById('createPostModal').classList.remove('active');
+            document.getElementById('postContent').value = '';
+            document.getElementById('imageFile').value = '';
+            document.getElementById('imageUrl').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('imagePreview').src = '';
+        }
+
+        // 파일 업로드
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    document.getElementById('imageUrl').value = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // URL 입력
+        function handleUrlInput(event) {
+            const url = event.target.value;
+            if (url) {
+                const preview = document.getElementById('imagePreview');
+                preview.src = url;
+                preview.style.display = 'block';
+                document.getElementById('imageFile').value = '';
+            }
+        }
+
+        // 게시물 생성
+        function createPost() {
+            const content = document.getElementById('postContent').value.trim();
+            const imagePreview = document.getElementById('imagePreview');
+            const imageSrc = imagePreview.style.display !== 'none' ? imagePreview.src : null;
+
+            if (!content && !imageSrc) {
+                alert('내용 또는 사진을 입력해주세요.');
+                return;
+            }
+
+            const newPost = {
+                id: Date.now(),
+                author: currentUser.name,
+                authorPic: currentUser.profilePic,
+                time: '방금 전',
+                content: content,
+                image: imageSrc,
+                likes: [],
+                comments: [],
+                saved: false
+            };
+
+            posts.unshift(newPost);
+            renderPosts();
+            closeCreatePostModal();
+        }
+
+        // 프로필 표시/숨김
+        function showProfile() {
+            document.getElementById('profileCard').classList.add('active');
+            document.getElementById('postsFeed').style.display = 'none';
+        }
+
+        function showFeed() {
+            document.getElementById('profileCard').classList.remove('active');
+            document.getElementById('postsFeed').style.display = 'block';
+        }
+
+        // 프로필 편집 모달
+        function openProfileEditModal() {
+            document.getElementById('profileEditModal').classList.add('active');
+            document.getElementById('editProfilePicPreview').src = currentUser.profilePic;
+            document.getElementById('editProfileName').value = currentUser.name;
+            document.getElementById('editProfileStatus').value = currentUser.status;
+        }
+
+        function closeProfileEditModal() {
+            document.getElementById('profileEditModal').classList.remove('active');
+        }
+
+        // 프로필 사진 업로드
+        function handleProfilePicUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('editProfilePicPreview').src = e.target.result;
+                    document.getElementById('profilePicUrl').value = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleProfilePicUrl(event) {
+            const url = event.target.value;
+            if (url) {
+                document.getElementById('editProfilePicPreview').src = url;
+                document.getElementById('profilePicFile').value = '';
+            }
+        }
+
+        // 프로필 저장
+        function saveProfile() {
+            currentUser.name = document.getElementById('editProfileName').value;
+            currentUser.status = document.getElementById('editProfileStatus').value;
+            currentUser.profilePic = document.getElementById('editProfilePicPreview').src;
+
+            // UI 업데이트
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileStatus').textContent = currentUser.status;
+            document.getElementById('profilePicLarge').src = currentUser.profilePic;
+            document.getElementById('headerProfilePic').src = currentUser.profilePic;
+
+            // 내 게시물과 댓글의 프로필 업데이트
+            posts.forEach(post => {
+                if (post.author === '나') {
+                    post.author = currentUser.name;
+                    post.authorPic = currentUser.profilePic;
+                }
+                post.comments.forEach(comment => {
+                    if (comment.author === '나') {
+                        comment.author = currentUser.name;
+                        comment.authorPic = currentUser.profilePic;
+                    }
+                });
+            });
+
+            renderPosts();
+            closeProfileEditModal();
+        }
+
+        // 좋아요 목록 표시
+        function showLikes(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post || post.likes.length === 0) return;
+
+            const likesList = document.getElementById('likesList');
+            likesList.innerHTML = post.likes.map(name => `
+                <div class="like-item">
+                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1877f2&color=fff&size=128" 
+                         alt="${name}" class="post-profile-pic">
+                    <div class="post-username">${name}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('likesModal').classList.add('active');
+        }
+
+        function closeLikesModal() {
+            document.getElementById('likesModal').classList.remove('active');
+        }
+
+        // 공유 모달
+        function openShareModal(postId) {
+            currentSharePost = postId;
+            document.getElementById('shareModal').classList.add('active');
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.remove('active');
+            currentSharePost = null;
+        }
+
+        function shareToTimeline() {
+            alert('타임라인에 공유되었습니다!');
+            closeShareModal();
+            addNotification('게시물을 공유했습니다.');
+        }
+
+        function shareToMessenger() {
+            alert('Messenger로 전송되었습니다!');
+            closeShareModal();
+        }
+
+        function copyLink() {
+            alert('링크가 클립보드에 복사되었습니다!');
+            closeShareModal();
+        }
+
+        // 이미지 뷰어
+        function openImageViewer(imageSrc) {
+            document.getElementById('viewerImage').src = imageSrc;
+            document.getElementById('imageViewerModal').classList.add('active');
+        }
+
+        function closeImageViewer() {
+            document.getElementById('imageViewerModal').classList.remove('active');
+        }
+
+        // 프로필 사진 모달
+        function openProfilePicModal() {
+            openImageViewer(currentUser.profilePic);
+        }
+
+        // 알림
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('show');
+            
+            if (dropdown.classList.contains('show')) {
+                notificationCount = 0;
+                updateNotificationBadge();
+            }
+        }
+
+        function addNotification(text) {
+            notificationCount++;
+            updateNotificationBadge();
+        }
+
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notificationBadge');
+            if (notificationCount > 0) {
+                badge.textContent = notificationCount;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            const myPosts = posts.filter(p => p.author === currentUser.name);
+            document.getElementById('postCount').textContent = myPosts.length;
+
+            const totalLikes = myPosts.reduce((sum, post) => sum + post.likes.length, 0);
+            document.getElementById('totalLikes').textContent = totalLikes;
+        }
+
+        // 외부 클릭시 드롭다운 닫기
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.post-dropdown') && !e.target.closest('.notification-icon')) {
+                document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
+                document.getElementById('notificationDropdown').classList.remove('show');
+            }
+        });
+
+        // 모달 외부 클릭시 닫기
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this && !this.classList.contains('image-viewer')) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+
+        // 초기화
+        initializeSamplePosts();
+    </script>
+</body>
+</html>
+''';

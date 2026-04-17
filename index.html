@@ -9,7 +9,7 @@
         body, html {
             margin: 0;
             padding: 0;
-            height: 100%;
+            height: 500%;
             font-family: Arial, sans-serif;
             overflow: hidden;
         }
@@ -188,6 +188,7 @@
         <button class="tab-button active" onclick="openTab(event, 'site1')">from Claude</button>
         <button class="tab-button" onclick="openTab(event, 'site2')">from GPT</button>
         <button class="tab-button" onclick="openTab(event, 'site3')">from Gemini</button>
+        <button class="tab-button" onclick="openTab(event, 'site4')">from chatHK (w.Claude)</button>
         
         <button class="notice-bell-btn" id="bellBtn" onclick="toggleNotice()" title="공지사항 보기">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -206,6 +207,10 @@
 
     <div id="site3" class="tab-content">
         <iframe src="site3.html"></iframe>
+    </div>
+
+    <div id="site4" class="tab-content">
+        <iframe src="site4.html"></iframe>
     </div>
 
     <script>
