@@ -11,7 +11,7 @@
             padding: 0;
             height: 100%;
             font-family: Arial, sans-serif;
-            overflow: hidden; /* 스크롤 중복 방지 */
+            overflow: hidden;
         }
 
         /* 탭 버튼이 들어가는 상단 바 */
@@ -19,6 +19,7 @@
             display: flex;
             background-color: #333;
             padding: 10px 10px 0 10px;
+            align-items: flex-end; 
         }
 
         .tab-button {
@@ -43,11 +44,47 @@
             font-weight: bold;
         }
 
+        /* 알람(종) 모양 아이콘 버튼 스타일 */
+        .notice-bell-btn {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: #f39c12; 
+            cursor: pointer;
+            padding: 10px 15px;
+            margin-bottom: 5px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.3s;
+            outline: none;
+        }
+
+        .notice-bell-btn svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        /* --- 종 달랑달랑 애니메이션 정의 --- */
+        @keyframes ringing {
+            0% { transform: scale(1.15) rotate(0deg); }
+            25% { transform: scale(1.15) rotate(-15deg); }
+            50% { transform: scale(1.15) rotate(0deg); }
+            75% { transform: scale(1.15) rotate(15deg); }
+            100% { transform: scale(1.15) rotate(0deg); }
+        }
+
+        /* 마우스를 올렸을 때 애니메이션 무한 반복(infinite) */
+        .notice-bell-btn:hover {
+            color: #f1c40f; 
+            animation: ringing 0.4s ease-in-out infinite;
+        }
+
         /* iframe이 들어가는 컨텐츠 영역 */
         .tab-content {
             display: none;
             width: 100%;
-            height: calc(100vh - 50px); /* 상단 바 높이 제외 */
+            height: calc(100vh - 50px);
             border: none;
         }
 
@@ -61,18 +98,27 @@
             border: none;
         }
 
-        /* --- 팝업 모달 스타일 추가 --- */
+        /* 팝업 모달 스타일 */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); /* 반투명 배경 */
+            background-color: rgba(0, 0, 0, 0.6);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 9999; /* 항상 최상단에 위치 */
+            z-index: 9999;
+            
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
         }
 
         .modal-content {
@@ -85,9 +131,18 @@
             position: relative;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             overflow: hidden;
+
+            transform-origin: top right;
+            transform: scale(0);
+            opacity: 0;
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
         }
 
-        /* 팝업 닫기 버튼 */
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
         .close-btn {
             position: absolute;
             top: 10px;
@@ -109,7 +164,7 @@
             width: 100%;
             height: 100%;
             border: none;
-            padding-top: 20px; /* 닫기 버튼과 겹치지 않게 여백 추가 */
+            padding-top: 20px;
             box-sizing: border-box;
         }
     </style>
@@ -118,14 +173,21 @@
 
     <div id="popupModal" class="modal-overlay">
         <div class="modal-content">
-            <button class="close-btn" onclick="closePopup()">&times;</button>
+            <button class="close-btn" onclick="toggleNotice()">&times;</button>
             <iframe src="notice.html" class="modal-iframe"></iframe>
         </div>
     </div>
+
     <div class="tab-bar">
         <button class="tab-button active" onclick="openTab(event, 'site1')">from Claude</button>
         <button class="tab-button" onclick="openTab(event, 'site2')">from GPT</button>
         <button class="tab-button" onclick="openTab(event, 'site3')">from Gemini</button>
+        
+        <button class="notice-bell-btn" onclick="toggleNotice()" title="공지사항 보기">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+            </svg>
+        </button>
     </div>
 
     <div id="site1" class="tab-content active">
@@ -141,6 +203,12 @@
     </div>
 
     <script>
+        window.onload = function() {
+            setTimeout(function() {
+                document.getElementById('popupModal').classList.add('show');
+            }, 100); 
+        };
+
         function openTab(evt, tabId) {
             const contents = document.getElementsByClassName("tab-content");
             for (let i = 0; i < contents.length; i++) {
@@ -156,9 +224,9 @@
             evt.currentTarget.classList.add("active");
         }
 
-        // --- 팝업 닫기 함수 추가 ---
-        function closePopup() {
-            document.getElementById('popupModal').style.display = 'none';
+        function toggleNotice() {
+            const modal = document.getElementById('popupModal');
+            modal.classList.toggle('show');
         }
     </script>
 
